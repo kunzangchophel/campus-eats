@@ -33,3 +33,7 @@ router.post('/orders', requireAuthApi, apiController.createOrder);
 
 app.use('/api', apiRoutes);
 
+const { connectMongo } = require('./config/mongo');
+connectMongo().catch(err => console.error('MongoDB connection failed:', err));
+
+
