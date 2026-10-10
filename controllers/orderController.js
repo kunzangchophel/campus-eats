@@ -2,21 +2,37 @@
 const Order = require('../models/Order');
 const MenuItem = require('../models/MenuItem');
 exports.createOrder = async (req, res) => {
- const { itemId } = req.body;
- const item = await MenuItem.getMenuItemById(itemId);
- if (!item) {
- return res.status(400).send('Invalid menu item.');
- }
- const order = await Order.createOrder(item.id, item.price);
- res.redirect(`/orders/${order.id}`);
+  const { itemId } = req.body;
+
+  const item = await MenuItem.getMenuItemById(itemId);
+  if (!item) {
+    return res.status(400).send('Invalid menu item.');
+  }
+
+  const order = await Order.createOrder(item.id, item.price, req.session.user.id);
+  res.redirect(`/orders/${order.id}`);
 };
 
+
 exports.getOrder = async (req, res) => {
- const order = await Order.getOrderById(req.params.id);
- if (!order) {
- return res.status(404).send('Order not found.');
- }
- res.render('order_confirmation', { title: 'Order Confirmed', order });
+    try {
+        const order = await Order.getOrderById(req.params.id);
+
+        if (!order) {
+            return res.status(404).json({
+                message: 'Order not found.'
+            });
+        }
+
+        res.json(order);
+
+    } catch (error) {
+        console.error('Error getting order:', error);
+
+        res.status(500).json({
+            message: 'Something went wrong.'
+        });
+    }
 };
 
 exports.updateOrder = async (req, res) => {
